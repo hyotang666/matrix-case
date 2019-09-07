@@ -52,6 +52,12 @@
     ((string string):yes))
 => :yes
 
+;; NOTE! Each clause is tested left to right order.
+#?(op(:a :b)
+    ((null null):no)
+    ((atom atom):yes))
+=> :yes
+
 #+syntax
 (MATRIX-TYPECASE targets &body clauses) ; => result
 
