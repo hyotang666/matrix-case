@@ -1,6 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :matrix-case
+  :version "0.0.0"
   :components ((:file "matrix-case")))
 
 ;; The form below is added by JINGOH.GENERATOR.

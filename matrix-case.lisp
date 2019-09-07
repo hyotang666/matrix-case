@@ -47,7 +47,7 @@
 		  (error "Impl bug: no branches~%assoc = ~S"assoc))))
 	    )
       (let((var (gensym))
-	   (c(mapcar #'make-form (canonicalize(integrate-candidates clauses underlying)))))
+	   (c(mapcar #'make-form (canonicalize(integrate-candidates clauses)))))
 	`((LET((,var ,(car targets)))
 	    (,underlying ,var
 	      ,@c
@@ -55,7 +55,6 @@
 			  (not(eq t (caar(last c)))))
 		  default))))))))
 
-#++
 (defun integrate-candidates(clauses)
   (loop :for (candidates . body) :in clauses
 	:for assoc = (assoc (car candidates) acc :test #'equal)
@@ -69,30 +68,6 @@
 	:finally (return (mapcar (lambda(assoc)
 				   (rplacd assoc (nreverse(cdr assoc))))
 				 acc))))
-
-(defun integrate-candidates(clauses underlying)
-  (labels((rec(clauses &optional (acc (make-hash-table :test #'equal)))
-	    (if(endp clauses)
-	      (do-return acc)
-	      (body (car clauses)(cdr clauses)acc)))
-	  (do-return(acc)
-	    (loop :for list :being :each :hash-value :of acc :using (:hash-key key)
-		  :collect (cons key(nreverse list))))
-	  (body(clause rest acc)
-	    (destructuring-bind(candidates . body)clause
-	      (if(find underlying '(typecase etypecase ctypecase) :test #'eq)
-		(rec rest (integrate (car candidates)(cdr candidates) body acc))
-		(if(atom (car candidates))
-		  (rec rest (integrate (car candidates)(cdr candidates) body acc))
-		  (rec rest (reduce (lambda(acc candidate)
-				      (integrate candidate (cdr candidates)body acc))
-				    (car candidates)
-				    :initial-value acc))))))
-	  (integrate(candidate rest body acc)
-	    (setf (gethash candidate acc)
-		  (cons `(,rest ,@body) (gethash candidate acc)))
-	    acc))
-    (rec clauses)))
 
 (defun canonicalize(alist)
   (labels((rec(alist &optional default acc)
