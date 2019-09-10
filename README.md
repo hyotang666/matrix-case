@@ -34,6 +34,7 @@ SBCL
 
 ### Tested with
 CCL/1.11.5
+ECL/16.1.3
 
 ### Known issues
 #### with SBCL.
