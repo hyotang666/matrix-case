@@ -94,6 +94,14 @@
 #?(op()) :expanded-to NIL
 #?(op) :signals ERROR
 
+;; ECL/16.1.3 specific issue.
+#?(flet((doit()
+	  (op('(elt))
+	    ((atom) :atom)
+	    (otherwise :other))))
+    (doit))
+=> :other
+
 #| Exceptional-Situations: |#
 ;; when TARGETS length and each TYPE-SPECIFIERS length is different,
 ;; an error is signaled.
