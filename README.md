@@ -33,12 +33,9 @@ Public domain
 SBCL
 
 ### Tested with
-CCL/1.11.5
-ECL/16.1.3
-
-### Known issues
-#### with SBCL.
-3 tests fails due to SBCL internal bug (?).
+* SBCL/1.5.6
+* CCL/1.11.5
+* ECL/16.1.3
 
 ## Installation
 TODO
