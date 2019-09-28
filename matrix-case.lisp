@@ -47,7 +47,7 @@
 		  (error "Impl bug: no branches~%assoc = ~S"assoc))))
 	    )
       (let((var (gensym))
-	   (c(mapcar #'make-form (canonicalize(integrate-candidates clauses)))))
+	   (c(mapcar #'make-form (canonicalize(integrate-candidates clauses underlying)))))
 	`((LET((,var ,(car targets)))
 	    (,underlying ,var
 	      ,@c
@@ -55,19 +55,32 @@
 			  (not(eq t (caar(last c)))))
 		  default))))))))
 
-(defun integrate-candidates(clauses)
-  (loop :for (candidates . body) :in clauses
-	:for assoc = (assoc (car candidates) acc :test #'equal)
-	:if assoc
-	:do (push `(,(cdr candidates),@body)
-		  (cdr (assoc (car candidates) acc :test #'equal)))
-	:else
-	:collect (list (car candidates)
-		       `(,(cdr candidates),@body))
-	:into acc
-	:finally (return (mapcar (lambda(assoc)
-				   (rplacd assoc (nreverse(cdr assoc))))
-				 acc))))
+(defun integrate-candidates(clauses underlying) ; -> (candidate (branches . body)+)*
+  (labels((rec(clauses &optional acc)
+	    (if(endp clauses)
+	      acc
+	      (body (car clauses)(cdr clauses)acc)))
+	  (body(clause rest acc)
+	    (destructuring-bind(candidates . body)clause
+	      (if(find underlying '(typecase etypecase ctypecase) :test #'eq)
+		(rec rest (integrate (car candidates)(cdr candidates) body acc))
+		(if(atom (car candidates))
+		  (rec rest (integrate (car candidates)(cdr candidates) body acc))
+		  (rec rest (reduce (lambda(acc candidate)
+				      (integrate candidate (cdr candidates)body acc))
+				    (car candidates)
+				    :initial-value acc))))))
+	  (integrate(candidate branches body acc)
+	    (let((assoc
+		   (assoc candidate acc :test #'equal)))
+	      (when assoc
+		(setf (cdr assoc)
+		      (nconc (cdr assoc)`((,branches ,@body)))))
+	      (if assoc
+		acc
+		(nconc acc `((,candidate (,branches ,@body)))))))
+	  )
+    (rec clauses)))
 
 (defun canonicalize(alist)
   (labels((rec(alist &optional default acc)
