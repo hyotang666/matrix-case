@@ -1,6 +1,7 @@
-# MATRIX-CASE 0.0.0
+# MATRIX-CASE 0.0.2
 ## What is this?
 Control flow macros which writing nested CASE easily.
+
 ### Current lisp world
 No such feature.
 
@@ -33,9 +34,10 @@ Public domain
 SBCL
 
 ### Tested with
-* SBCL/1.5.6
+* SBCL/1.5.8
 * CCL/1.11.5
 * ECL/16.1.3
+* CLISP/2.49
 
 ## Installation
 TODO
