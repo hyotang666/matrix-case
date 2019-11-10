@@ -1,4 +1,4 @@
-# MATRIX-CASE 0.0.2
+# MATRIX-CASE 0.0.3
 ## What is this?
 Control flow macros which writing nested CASE easily.
 
