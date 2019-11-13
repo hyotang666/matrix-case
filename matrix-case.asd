@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :matrix-case
-  :version "0.0.4"
+  :version "0.0.5"
   :license "Public domain"
   :description "Control flow macros which writing nested CASE easily."
   :author "Shinichi Sato"
@@ -38,5 +38,5 @@
   (when (and system (not (featurep :clisp)))
     (load-system system)
     (defmethod perform :after
-               ((o load-op) (c (eql (find-system "resignal-bind"))))
+               ((o load-op) (c (eql (find-system "matrix-case"))))
       (symbol-call :jingoh.documentizer :import c))))
