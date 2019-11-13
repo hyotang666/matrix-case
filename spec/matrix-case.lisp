@@ -3,7 +3,7 @@
 (setup :matrix-case)
 
 (common-requirements-about (MATRIX-TYPECASE MATRIX-ETYPECASE MATRIX-CTYPECASE)
-			   :as op)
+			   :as op :doc-type function)
 ;;;; [Macro] MATRIX-TYPECASE MATRIX-ETYPECASE MATRIX-CTYPECASE
 
 #| Description: Like CL:TYPECASE, but represents nested typecases.|#
@@ -114,7 +114,7 @@
 :signals ERROR
 
 ;; others
-(requirements-about matrix-typecase)
+(requirements-about matrix-typecase :doc-type function)
 ;; Default return value is NIL.
 #?(matrix-typecase(0)
     ((symbol) :no))
@@ -146,14 +146,14 @@
 		 (t :never)))
 
 (common-requirements-about (matrix-etypecase matrix-ctypecase)
-			   :as op)
+			   :as op :doc-type function)
 ;; When any clause satisfies, an ERROR is signaled.
 #?(op(0)
     ((symbol) :never))
 :signals ERROR
 
 (common-requirements-about (MATRIX-CASE MATRIX-ECASE MATRIX-CCASE)
-			   :as op)
+			   :as op :doc-type function)
 
 ;;;; [Macro] MATRIX-CASE MATRIX-ECASE MATRIX-CCASE 
 
