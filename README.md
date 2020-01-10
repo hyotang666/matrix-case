@@ -1,4 +1,4 @@
-# MATRIX-CASE 0.0.3
+# MATRIX-CASE 0.0.6
 ## What is this?
 Control flow macros which writing nested CASE easily.
 
@@ -34,7 +34,7 @@ Public domain
 SBCL
 
 ### Tested with
-* SBCL/1.5.8
+* SBCL/2.0.0
 * CCL/1.11.5
 * ECL/16.1.3
 * CLISP/2.49
