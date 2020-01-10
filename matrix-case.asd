@@ -1,7 +1,7 @@
 ; vim: ft=lisp et
 (in-package :asdf)
 (defsystem :matrix-case
-  :version "0.0.5"
+  :version "0.0.6"
   :license "Public domain"
   :description "Control flow macros which writing nested CASE easily."
   :author "Shinichi Sato"
