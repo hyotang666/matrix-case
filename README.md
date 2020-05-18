@@ -16,7 +16,7 @@ But it is too much strong.
 ## Usage
 
 ```Lisp
-(matrix-typecase(:a :b)
+(matrix-typecase (:a :b)
   ((null null) :never)
   ((keyword keyword) :yes))
 => :YES
@@ -34,9 +34,9 @@ Public domain
 SBCL
 
 ### Tested with
-* SBCL/2.0.0
-* CCL/1.11.5
-* ECL/16.1.3
+* SBCL/2.0.2
+* CCL/1.12
+* ECL/20.4.24
 * CLISP/2.49
 
 ## Installation
