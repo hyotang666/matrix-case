@@ -15,47 +15,46 @@
 => :YES!
 
 ;; Only one cluase's body will be evaluated.
-#?(op(0 'sym 1)
-    ((symbol symbol symbol)(princ :sss))
-    ((symbol symbol integer)(princ :ssi))
-    ((symbol integer symbol)(princ :sis))
-    ((symbol integer integer)(princ :sii))
-    ((integer symbol integer)(princ :yes))
-    ((integer symbol symbol)(princ :iss))
-    ((integer integer integer)(princ :iii))
-    ((integer integer symbol)(princ :iis))
+#?(op (0 'sym 1)
+    ((symbol symbol symbol) (princ :sss))
+    ((symbol symbol integer) (princ :ssi))
+    ((symbol integer symbol) (princ :sis))
+    ((symbol integer integer) (princ :sii))
+    ((integer symbol integer) (princ :yes))
+    ((integer symbol symbol) (princ :iss))
+    ((integer integer integer) (princ :iii))
+    ((integer integer symbol) (princ :iis))
     (otherwise (princ :otherwise)))
 :outputs "YES"
 
 ;; Of course, we can use compound type specifier.
-#?(op(0)
+#?(op (0)
     (((and integer (eql 1))) :no)
     (((member 0 2 4 6 8)) :yes))
 => :YES
 
 ;; T as wildcard
-#?(op("hoge" 0)
-    ((t symbol):no)
-    ((t fixnum):yes)
-    ((string string):no)
-    )
+#?(op ("hoge" 0)
+    ((t symbol) :no)
+    ((t fixnum) :yes)
+    ((string string) :no))
 => :yes
 
 ;; NOTE! wildcard is treated as last resort.
-#?(op("1" "2")
+#?(op ("1" "2")
     ((t string) :no)
-    ((string string):yes))
+    ((string string) :yes))
 => :yes
 
-#?(op("1" "2")
+#?(op ("1" "2")
     ((string t) :no)
-    ((string string):yes))
+    ((string string) :yes))
 => :yes
 
 ;; NOTE! Each clause is tested left to right order.
-#?(op(:a :b)
-    ((null null):no)
-    ((atom atom):yes))
+#?(op (:a :b)
+    ((null null) :no)
+    ((atom atom) :yes))
 => :yes
 
 #+syntax
@@ -67,10 +66,10 @@
    target := one lisp form
 |#
 ;; every TARGET forms are evaluated only once.
-#?(op((princ 0)(princ 1))
-    ((symbol symbol):no)
-    ((integer symbol):no)
-    ((symbol integer):no)
+#?(op ((princ 0) (princ 1))
+    ((symbol symbol) :no)
+    ((integer symbol) :no)
+    ((symbol integer) :no)
     (otherwise :no))
 :outputs "01"
 
@@ -88,15 +87,15 @@
 #| Notes: |#
 ;; Empty TARGETS is valid but, in such case CLAUSES must empty.
 ;; Such form evaluated to be NIL by macro expansion.
-#?(op()()) => NIL
-#?(op()()) :expanded-to NIL
-#?(op()) => NIL
-#?(op()) :expanded-to NIL
+#?(op () ()) => NIL
+#?(op () ()) :expanded-to NIL
+#?(op ()) => NIL
+#?(op ()) :expanded-to NIL
 #?(op) :signals ERROR
 
 ;; ECL/16.1.3 specific issue.
-#?(flet((doit()
-	  (op('(elt))
+#?(flet ((doit ()
+	  (op ('(elt))
 	    ((atom) :atom)
 	    (otherwise :other))))
     (doit))
@@ -105,41 +104,41 @@
 #| Exceptional-Situations: |#
 ;; when TARGETS length and each TYPE-SPECIFIERS length is different,
 ;; an error is signaled.
-#?(op(0)
+#?(op (0)
     ((symbol integer) :error))
 :signals ERROR
 
-#?(op(0 :hoge)
+#?(op (0 :hoge)
     ((integer) :error))
 :signals ERROR
 
 ;; others
 (requirements-about matrix-typecase :doc-type function)
 ;; Default return value is NIL.
-#?(matrix-typecase(0)
+#?(matrix-typecase (0)
     ((symbol) :no))
 => NIL
 
 ;; Expanded examples.
-#?(matrix-typecase(0)
+#?(matrix-typecase (0)
     ((integer) :yes)
     (otherwise :no))
-:expanded-to (let((var 0))
+:expanded-to (let ((var 0))
 	       (typecase var
 		 (integer :yes)
 		 (t :no)))
 
-#?(matrix-typecase(0 'sym)
+#?(matrix-typecase (0 'sym)
     ((symbol integer) :no)
     ((integer symbol) :yes)
     (otherwise :never))
-:expanded-to (let((var1 0))
+:expanded-to (let ((var1 0))
 	       (typecase var1
-		 (symbol (let((var2 'sym))
+		 (symbol (let ((var2 'sym))
 			   (typecase var2
 			     (integer :no)
 			     (t :never))))
-		 (integer (let((var3 'sym))
+		 (integer (let ((var3 'sym))
 			    (typecase var3
 			      (symbol :yes)
 			      (t :never))))
@@ -148,7 +147,7 @@
 (common-requirements-about (matrix-etypecase matrix-ctypecase)
 			   :as op :doc-type function)
 ;; When any clause satisfies, an ERROR is signaled.
-#?(op(0)
+#?(op (0)
     ((symbol) :never))
 :signals ERROR
 
@@ -158,16 +157,16 @@
 ;;;; [Macro] MATRIX-CASE MATRIX-ECASE MATRIX-CCASE 
 
 #| Description: Like CL:CASE, but represents nested case.|#
-#?(op(0 1 2)
-    ((0 0 0):no)
-    ((0 1 1):no)
-    ((0 1 2):yes)
+#?(op (0 1 2)
+    ((0 0 0) :no)
+    ((0 1 1) :no)
+    ((0 1 2) :yes)
     (otherwise :never))
 => :YES
-#?(matrix-case(0 1)
-    (((0 2 4 6 8)(1 3 5 7 9)) :yes)
-    (((0 2 4 6 8)(0 2 4 6 8)) :no)
-    (((1 3 5 7 9)(0 2 4 6 8)) :no))
+#?(matrix-case (0 1)
+    (((0 2 4 6 8) (1 3 5 7 9)) :yes)
+    (((0 2 4 6 8) (0 2 4 6 8)) :no)
+    (((1 3 5 7 9) (0 2 4 6 8)) :no))
 => :YES
 
 #+syntax
