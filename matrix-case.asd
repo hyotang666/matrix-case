@@ -4,7 +4,9 @@
   :version "0.1.4"
   :license "Public domain"
   :description "Control flow macros which writing nested CASE easily."
-  :author "Shinichi Sato"
+  :author "SATO Shinichi"
+  :source-control (:git "git@github.com:hyotang666/matrix-case")
+  :bug-tracker "https://github.com/hyotang666/matrix-case/issues"
   :components ((:file "matrix-case")))
 
 ;;; These forms below are added by JINGOH.GENERATOR.
