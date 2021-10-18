@@ -76,8 +76,7 @@
 (defun matrix (underlying targets clauses default)
   (if (null targets)
       (if (< 1 (length clauses))
-          (error "Matrix impl bug:~%targets = ~S~%clauses = ~S" targets
-                 clauses)
+          (error "Internal error:~%Targets = ~S~%Clauses = ~S" targets clauses)
           (cdar clauses))
       (labels ((make-form (assoc)
                  (destructuring-bind
@@ -86,7 +85,8 @@
                    (if branches
                        `(,type
                          ,@(matrix underlying (cdr targets) branches default))
-                       (error "Impl bug: no branches~%assoc = ~S" assoc)))))
+                       (error "Internal error: No branches~%assoc = ~S"
+                              assoc)))))
         (let* ((var (gensym))
                (c
                 (mapcar #'make-form
