@@ -19,28 +19,38 @@
                            :test #'eq
                            :from-end t)))
                 (if otherwise
-                    (values
-                      (remove 'otherwise clauses ; Don't ever use DELETE!
-                              :key #'car
-                              :from-end t
-                              :count 1)
-                      (list (cons t (cdr otherwise))))
+                    (values (remove 'otherwise clauses ; Don't ever use DELETE!
+                                    :key #'car
+                                    :from-end t
+                                    :count 1)
+                            (list otherwise))
                     (values clauses nil)))))
        ;; trivial syntax check.
-       (assert
-        (loop :for (candidates) :in clauses
-              :with length = (length targets)
-              :always (if (eq 'otherwise candidates)
-                          t
-                          (= length (length candidates))))
-        nil "TARGETS length does not match CANDIDATES length.~%~S~S" targets
-        (mapcar #'car clauses))
+       (assert (loop :for (candidates) :in clauses
+                     :with length = (length targets)
+                     :always (if (eq 'otherwise candidates)
+                                 t
+                                 (= length (length candidates))))
+         ()
+         "TARGETS length does not match CANDIDATES length.~%~S~S" targets
+         (mapcar #'car clauses))
        ;; body
        (car
          (multiple-value-call #'matrix
            ',underlying
            targets
            (canonicalize clauses))))))
+
+(defun fix-underlying (underlying otherwisep)
+  "Remove prefix \"E\" or \"C\", if otherwise clause exists."
+  (if (not otherwisep)
+      underlying
+      (if (find underlying '(etypecase ctypecase ecase ccase))
+          (or (find-symbol (subseq (symbol-name underlying) 1) :common-lisp)
+              (error
+                "Internal error: Missing symbol ~S in :common-lisp package."
+                (subseq (symbol-name underlying) 1)))
+          underlying)))
 
 (defun matrix (underlying targets clauses default)
   (if (null targets)
@@ -56,14 +66,21 @@
                        `(,type
                          ,@(matrix underlying (cdr targets) branches default))
                        (error "Impl bug: no branches~%assoc = ~S" assoc)))))
-        (let ((var (gensym))
-              (c
-               (mapcar #'make-form
-                       (canonicalize
-                         (integrate-candidates clauses underlying)))))
+        (let* ((var (gensym))
+               (c
+                (mapcar #'make-form
+                        (canonicalize
+                          (integrate-candidates clauses underlying))))
+               (clause-has-otherwise-candidate-p
+                (eq 'otherwise (caar (last c)))))
           `((let ((,var ,(car targets)))
-              (,underlying ,var ,@c
-               ,@(when (and default (not (eq t (caar (last c)))))
+              (,(fix-underlying underlying
+                                (or (and default
+                                         (not
+                                           clause-has-otherwise-candidate-p))
+                                    clause-has-otherwise-candidate-p))
+               ,var ,@c
+               ,@(when (and default (not clause-has-otherwise-candidate-p))
                    default))))))))
 
 (defun integrate-candidates (clauses underlying)
@@ -100,6 +117,7 @@
     (rec clauses)))
 
 (defun canonicalize (alist)
+  "Move T clause to the last."
   (labels ((rec (alist &optional default acc)
              (if (endp alist)
                  (do-return default acc)
@@ -111,11 +129,12 @@
                               ,@(delete-duplicates (append rest (cdar default))
                                                    :key #'car
                                                    :test #'equal
-                                                   :from-end t)) :into result
+                                                   :from-end t))
+                     :into result
                    :finally (return (nreconc result default))))
            (body (clause rest default acc)
              (if (eq t (car clause))
-                 (rec rest (cons clause default) acc)
+                 (rec rest (cons (cons 'otherwise (cdr clause)) default) acc)
                  (rec rest default (cons clause acc)))))
     (rec alist)))
 

@@ -126,7 +126,7 @@
 :expanded-to (let ((var 0))
 	       (typecase var
 		 (integer :yes)
-		 (t :no)))
+		 (otherwise :no)))
 
 #?(matrix-typecase (0 'sym)
     ((symbol integer) :no)
@@ -137,12 +137,12 @@
 		 (symbol (let ((var2 'sym))
 			   (typecase var2
 			     (integer :no)
-			     (t :never))))
+			     (otherwise :never))))
 		 (integer (let ((var3 'sym))
 			    (typecase var3
 			      (symbol :yes)
-			      (t :never))))
-		 (t :never)))
+			      (otherwise :never))))
+		 (otherwise :never)))
 
 (common-requirements-about (matrix-etypecase matrix-ctypecase)
 			   :as op :doc-type function)

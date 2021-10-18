@@ -34,10 +34,13 @@ Public domain
 SBCL
 
 ### Tested with
-* SBCL/2.0.2
+* SBCL/2.1.7
 * CCL/1.12
 * ECL/20.4.24
 * CLISP/2.49
+* CMUCL/21D
+* Allegro/10.1
+* ABCL/1.8.0
 
 ## Installation
 TODO
