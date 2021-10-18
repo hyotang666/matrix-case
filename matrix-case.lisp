@@ -11,14 +11,12 @@
 
 (defun fix-underlying (underlying otherwisep)
   "Remove prefix \"E\" or \"C\", if otherwise clause exists."
-  (if (not otherwisep)
-      underlying
-      (if (find underlying '(etypecase ctypecase ecase ccase))
-          (or (find-symbol (subseq (symbol-name underlying) 1) :common-lisp)
-              (error
-                "Internal error: Missing symbol ~S in :common-lisp package."
-                (subseq (symbol-name underlying) 1)))
-          underlying)))
+  (cond ((not otherwisep) underlying)
+        ((not (find underlying '(etypecase ctypecase ecase ccase))) underlying)
+        ((find-symbol (subseq (symbol-name underlying) 1) :common-lisp))
+        (t
+         (error "Internal error: Missing symbol ~S in :common-lisp package."
+                (subseq (symbol-name underlying) 1)))))
 
 (defun integrate-candidates (clauses underlying)
   ;; -> (candidate (branches . body)+)*
