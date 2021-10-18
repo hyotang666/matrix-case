@@ -52,7 +52,7 @@
     (rec clauses)))
 
 (defun canonicalize (alist)
-  "Move T clause to the last."
+  "Move T clause to the last as otherwise clause."
   (labels ((rec (alist &optional default acc)
              (if (endp alist)
                  (do-return default acc)
