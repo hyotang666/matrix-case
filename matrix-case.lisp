@@ -9,38 +9,6 @@
 
 (in-package :matrix-case)
 
-(defmacro defmatrix (underlying)
-  `(defmacro ,(intern (format nil "MATRIX-~A" underlying))
-             ((&rest targets) &body clauses)
-     (flet ((canonicalize (clauses)
-              (let ((otherwise
-                     (find 'otherwise clauses
-                           :key #'car
-                           :test #'eq
-                           :from-end t)))
-                (if otherwise
-                    (values (remove 'otherwise clauses ; Don't ever use DELETE!
-                                    :key #'car
-                                    :from-end t
-                                    :count 1)
-                            (list otherwise))
-                    (values clauses nil)))))
-       ;; trivial syntax check.
-       (assert (loop :for (candidates) :in clauses
-                     :with length = (length targets)
-                     :always (if (eq 'otherwise candidates)
-                                 t
-                                 (= length (length candidates))))
-         ()
-         "TARGETS length does not match CANDIDATES length.~%~S~S" targets
-         (mapcar #'car clauses))
-       ;; body
-       (car
-         (multiple-value-call #'matrix
-           ',underlying
-           targets
-           (canonicalize clauses))))))
-
 (defun fix-underlying (underlying otherwisep)
   "Remove prefix \"E\" or \"C\", if otherwise clause exists."
   (if (not otherwisep)
@@ -51,37 +19,6 @@
                 "Internal error: Missing symbol ~S in :common-lisp package."
                 (subseq (symbol-name underlying) 1)))
           underlying)))
-
-(defun matrix (underlying targets clauses default)
-  (if (null targets)
-      (if (< 1 (length clauses))
-          (error "Matrix impl bug:~%targets = ~S~%clauses = ~S" targets
-                 clauses)
-          (cdar clauses))
-      (labels ((make-form (assoc)
-                 (destructuring-bind
-                     (type . branches)
-                     assoc
-                   (if branches
-                       `(,type
-                         ,@(matrix underlying (cdr targets) branches default))
-                       (error "Impl bug: no branches~%assoc = ~S" assoc)))))
-        (let* ((var (gensym))
-               (c
-                (mapcar #'make-form
-                        (canonicalize
-                          (integrate-candidates clauses underlying))))
-               (clause-has-otherwise-candidate-p
-                (eq 'otherwise (caar (last c)))))
-          `((let ((,var ,(car targets)))
-              (,(fix-underlying underlying
-                                (or (and default
-                                         (not
-                                           clause-has-otherwise-candidate-p))
-                                    clause-has-otherwise-candidate-p))
-               ,var ,@c
-               ,@(when (and default (not clause-has-otherwise-candidate-p))
-                   default))))))))
 
 (defun integrate-candidates (clauses underlying)
   ;; -> (candidate (branches . body)+)*
@@ -137,6 +74,69 @@
                  (rec rest (cons (cons 'otherwise (cdr clause)) default) acc)
                  (rec rest default (cons clause acc)))))
     (rec alist)))
+
+(defun matrix (underlying targets clauses default)
+  (if (null targets)
+      (if (< 1 (length clauses))
+          (error "Matrix impl bug:~%targets = ~S~%clauses = ~S" targets
+                 clauses)
+          (cdar clauses))
+      (labels ((make-form (assoc)
+                 (destructuring-bind
+                     (type . branches)
+                     assoc
+                   (if branches
+                       `(,type
+                         ,@(matrix underlying (cdr targets) branches default))
+                       (error "Impl bug: no branches~%assoc = ~S" assoc)))))
+        (let* ((var (gensym))
+               (c
+                (mapcar #'make-form
+                        (canonicalize
+                          (integrate-candidates clauses underlying))))
+               (clause-has-otherwise-candidate-p
+                (eq 'otherwise (caar (last c)))))
+          `((let ((,var ,(car targets)))
+              (,(fix-underlying underlying
+                                (or (and default
+                                         (not
+                                           clause-has-otherwise-candidate-p))
+                                    clause-has-otherwise-candidate-p))
+               ,var ,@c
+               ,@(when (and default (not clause-has-otherwise-candidate-p))
+                   default))))))))
+
+(defmacro defmatrix (underlying)
+  `(defmacro ,(intern (format nil "MATRIX-~A" underlying))
+             ((&rest targets) &body clauses)
+     (flet ((canonicalize (clauses)
+              (let ((otherwise
+                     (find 'otherwise clauses
+                           :key #'car
+                           :test #'eq
+                           :from-end t)))
+                (if otherwise
+                    (values (remove 'otherwise clauses ; Don't ever use DELETE!
+                                    :key #'car
+                                    :from-end t
+                                    :count 1)
+                            (list otherwise))
+                    (values clauses nil)))))
+       ;; trivial syntax check.
+       (assert (loop :for (candidates) :in clauses
+                     :with length = (length targets)
+                     :always (if (eq 'otherwise candidates)
+                                 t
+                                 (= length (length candidates))))
+         ()
+         "TARGETS length does not match CANDIDATES length.~%~S~S" targets
+         (mapcar #'car clauses))
+       ;; body
+       (car
+         (multiple-value-call #'matrix
+           ',underlying
+           targets
+           (canonicalize clauses))))))
 
 (macrolet ((defs (&rest symbols)
              `(progn ,@(mapcar (lambda (s) `(defmatrix ,s)) symbols))))
